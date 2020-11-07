@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import select
 import struct
 
@@ -390,7 +390,7 @@ class BLESession(Session):
                 else:
                     # Nothing to do:
                     time.sleep(0)
-
+                    
     class BLEDelegate(DefaultDelegate):
         """
         A bluepy handler to receive notifictions from BLE devices.
@@ -401,7 +401,7 @@ class BLESession(Session):
             self.handles = {}
             self.restart_notification_event = threading.Event()
             self.restart_notification_event.set()
-
+            
         def add_handle(self, serviceId, charId, handle):
             logger.debug(f"add handle for notification: {handle}")
             params = { 'serviceId': UUID(serviceId).getCommonName(),
@@ -414,7 +414,7 @@ class BLESession(Session):
             params = self.handles[handle].copy()
             params['message'] = base64.standard_b64encode(data).decode('ascii')
             self.session.notify('characteristicDidChange', params)
-
+            
     def __init__(self, websocket, loop):
         super().__init__(websocket, loop)
         self.status = self.INITIAL
@@ -489,7 +489,13 @@ class BLESession(Session):
         with self.lock:
             charas = self.perip.getCharacteristics(uuid=chara_id)
             return charas[0]
-
+    #add estea
+    def handleDiscovery(self, dev, isNewDev, isNewData):
+        if isNewDev:
+            print("Discovered device", dev.addr)
+        elif isNewData:
+            print("Received new data from", dev.addr)
+            
     def handle_request(self, method, params):
         """Handle requests from Scratch"""
         if self.delegate:
@@ -517,8 +523,9 @@ class BLESession(Session):
                 try:
                     devices = scanner.scan(10.0)
                     for dev in devices:
-                        if self.matches(dev, params['filters']):
-                            self.found_devices.append(dev)
+                        #print(dev)
+                        #if self.matches(dev, params['filters']):
+                        self.found_devices.append(dev)
                     found_ifaces += 1
                     logger.debug(f"BLE device found with iface #{i}");
                 except BTLEManagementError as e:
